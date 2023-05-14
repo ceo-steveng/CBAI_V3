@@ -18,18 +18,20 @@ interface MintProps {
 export const useSmartContract = () => {
   const toast = useToast();
   const { active, wallet } = useWallet();
-  const [web3, setWeb3] = useState<any>();
   const [contract, setContract] = useState<any>(null);
   const [currentSupplyValue, setCurrentSupplyValue] = useState(null);
   const [totalSupplyValue, setTotalSupplyValue] = useState(null);
   const [nftCost, setNftCost] = useState(0);
   const [isLoadingTransaction, setIsLoadingTransaction] = useState(false);
 
+  // @ts-ignore
+  const web3 = new Web3(window.ethereum);
   const baseLink =
     process.env.NEXT_PUBLIC_CHAIN_ID === "5"
       ? "https://goerli.etherscan.io"
       : "https://etherscan.io";
-  console.log({ web3 });
+
+
 
   useEffect(() => {
     initializeEngine().then((r) => r);
@@ -38,6 +40,7 @@ export const useSmartContract = () => {
   async function initializeEngine() {
     if (!contract) {
       await getContract();
+      console.log({ web3 });
     }
 
     if (contract && active && !currentSupplyValue && !totalSupplyValue) {
@@ -60,10 +63,6 @@ export const useSmartContract = () => {
   }
 
   async function getContract() {
-    // @ts-ignore
-    const web3instance = new Web3(window.ethereum);
-
-    setWeb3(web3instance);
 
     // @ts-ignore
     const networkId = await window.ethereum.request({
@@ -74,7 +73,7 @@ export const useSmartContract = () => {
     const NetworkData: any = await SmartContract.networks[networkId];
 
     if (NetworkData) {
-      const smartContractObj = new web3instance.eth.Contract(
+      const smartContractObj = new web3.eth.Contract(
         // @ts-ignore
         SmartContract.abi,
         contractAddress
@@ -90,7 +89,7 @@ export const useSmartContract = () => {
     isAdmin,
     isWhitelist,
   }: MintProps) {
-    setIsLoadingTransaction(true);
+    setIsLoadingTransaction(false);
     let transactionParameters;
     const etherCost = Web3.utils.fromWei(nftCost.toString(), "ether");
 
@@ -115,6 +114,7 @@ export const useSmartContract = () => {
     let txHash: string;
     try {
       if (isWhitelist) {
+        setIsLoadingTransaction(true);
         txHash = await contract.methods
           .whitelistMint(amount)
           .send(transactionParameters)
@@ -125,6 +125,7 @@ export const useSmartContract = () => {
             return receipt.transactionHash;
           });
       } else {
+        setIsLoadingTransaction(true);
         txHash = await contract.methods
           .mint(amount)
           .send(transactionParameters)
@@ -181,12 +182,13 @@ export const useSmartContract = () => {
             />
           ),
         });
+
+        return {
+          success: false,
+          status: `😥 Something went wrong, check error at Etherscan: https://etherscan.io/tx/${error.receipt.transactionHash}`,
+        };
       }
 
-      return {
-        success: false,
-        status: `😥 Something went wrong, check error at Etherscan: https://etherscan.io/tx/${error.receipt.transactionHash}`,
-      };
     }
   }
 
