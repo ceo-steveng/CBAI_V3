@@ -77,7 +77,7 @@ export const useSmartContract = () => {
       const smartContractObj = new web3instance.eth.Contract(
         // @ts-ignore
         SmartContract.abi,
-        NetworkData.address
+        contractAddress
       );
 
       setContract(smartContractObj);
