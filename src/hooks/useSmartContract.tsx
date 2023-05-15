@@ -5,7 +5,6 @@ import { useEthers } from '@usedapp/core';
 import SmartContract from "../contracts/CBAI.json";
 import { useWallet } from "../providers/WalletProvider";
 import { Toast } from "../modules/components/Toast";
-require("dotenv").config();
 
 // const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 const contractAddress = process.env.CONTRACT_ADDRESS;
