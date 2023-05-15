@@ -84,7 +84,7 @@ export const useSmartContract = () => {
   }
 
   useEffect(() => {
-    state = setInterval(() => { initState(); }, 1000);
+    state = setInterval(() => { initState(); }, 5000);
   }, [contract]);
 
   async function requestMint({
