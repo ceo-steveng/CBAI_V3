@@ -5,6 +5,7 @@ import { useEthers } from '@usedapp/core';
 import SmartContract from "../contracts/CBAI.json";
 import { useWallet } from "../providers/WalletProvider";
 import { Toast } from "../modules/components/Toast";
+require("dotenv").config();
 
 // const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
 const contractAddress = process.env.CONTRACT_ADDRESS;
@@ -20,7 +21,6 @@ export const useSmartContract = () => {
   const toast = useToast();
   const { active, activateBrowserWallet } = useEthers();
   const { conn, wallet } = useWallet();
-  const [contract, setContract] = useState<any>(null);
   const [currentSupplyValue, setCurrentSupplyValue] = useState(null);
   const [totalSupplyValue, setTotalSupplyValue] = useState(null);
   const [nftCost, setNftCost] = useState(0);
@@ -31,23 +31,14 @@ export const useSmartContract = () => {
       ? "https://goerli.etherscan.io"
       : "https://etherscan.io";
 
-  let web3: Web3 | undefined;
-
-  let state: NodeJS.Timeout;
-
-  async function getContract() {
-
-    const smartContractObj = new web3!.eth.Contract(
-      // @ts-ignore
-      SmartContract.abi,
-      contractAddress
-    );
-
-    setContract(smartContractObj);
-  }
+  const web3 = new Web3(new Web3.providers.HttpProvider(process.env.SEPOLIA_RPC!));
+  const contract = new web3.eth.Contract(
+    // @ts-ignore
+    SmartContract.abi,
+    contractAddress
+  );
 
   async function initializeEngine() {
-    await getContract();
     console.log({ web3 });
 
     if (contract && conn && !currentSupplyValue && !totalSupplyValue) {
@@ -72,9 +63,7 @@ export const useSmartContract = () => {
   function initState() {
     try {
       if (active) {
-        web3 = new Web3(new Web3.providers.HttpProvider(process.env.SEPOLIA_RPC!));
         initializeEngine().then((r) => r);
-        clearInterval(state);
       } else {
         active === false && activateBrowserWallet();
       }
@@ -84,7 +73,7 @@ export const useSmartContract = () => {
   }
 
   useEffect(() => {
-    state = setInterval(() => { initState(); }, 5000);
+    initState();
   }, [contract]);
 
   async function requestMint({
