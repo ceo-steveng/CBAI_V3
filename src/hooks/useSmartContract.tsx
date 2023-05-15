@@ -37,23 +37,13 @@ export const useSmartContract = () => {
 
   async function getContract() {
 
-    // @ts-ignore
-    const networkId = await window.ethereum.request({
-      method: "net_version",
-    });
+    const smartContractObj = new web3!.eth.Contract(
+      // @ts-ignore
+      SmartContract.abi,
+      contractAddress
+    );
 
-    // @ts-ignore
-    const NetworkData: any = await SmartContract.networks[networkId];
-
-    if (NetworkData) {
-      const smartContractObj = new web3!.eth.Contract(
-        // @ts-ignore
-        SmartContract.abi,
-        contractAddress
-      );
-
-      setContract(smartContractObj);
-    }
+    setContract(smartContractObj);
   }
 
   async function initializeEngine() {
