@@ -87,7 +87,7 @@ export const useSmartContract = () => {
         initializeEngine().then((r) => r);
         clearInterval(state);
       } else {
-        !active ? activateBrowserWallet() : console.log('Something went wrong');
+        active === false && activateBrowserWallet();
       }
     } catch (error: any) {
       console.error(error);
