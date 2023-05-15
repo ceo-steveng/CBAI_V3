@@ -18,7 +18,7 @@ interface MintProps {
 
 export const useSmartContract = () => {
   const toast = useToast();
-  const { library, active, activateBrowserWallet } = useEthers();
+  const { active, activateBrowserWallet } = useEthers();
   const { conn, wallet } = useWallet();
   const [contract, setContract] = useState<any>(null);
   const [currentSupplyValue, setCurrentSupplyValue] = useState(null);
@@ -80,9 +80,8 @@ export const useSmartContract = () => {
   }
 
   function initState() {
-    console.log(active, library);
     try {
-      if (active && library!._network.chainId.toString() === process.env.CURRENT_CHAIN_ID!) {
+      if (active) {
         web3 = new Web3(new Web3.providers.HttpProvider(process.env.SEPOLIA_RPC!));
         initializeEngine().then((r) => r);
         clearInterval(state);
