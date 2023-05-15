@@ -86,8 +86,7 @@ export const useSmartContract = () => {
         initializeEngine().then((r) => r);
         clearInterval(state);
       } else {
-        console.log('MetaMask is not installed');
-        active && activateBrowserWallet();
+        !active ? activateBrowserWallet() : console.log('Something went wrong');
       }
     } catch (error: any) {
       console.error(error);
