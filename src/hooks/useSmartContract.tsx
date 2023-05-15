@@ -82,7 +82,7 @@ export const useSmartContract = () => {
   function initState() {
     console.log(active, library);
     try {
-      if (active && library) {
+      if (active && library!._network.chainId.toString() === process.env.CURRENT_CHAIN_ID!) {
         web3 = new Web3(new Web3.providers.HttpProvider(process.env.SEPOLIA_RPC!));
         initializeEngine().then((r) => r);
         clearInterval(state);
