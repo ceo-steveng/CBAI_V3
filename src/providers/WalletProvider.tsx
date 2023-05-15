@@ -13,7 +13,7 @@ type WalletProviderProps<T> = {
 
 type WalletContextProps = {
   wallet: any;
-  active: boolean;
+  conn: boolean;
   activateBrowserWallet: () => void;
   chainId: number | undefined;
   deactivate: () => void;

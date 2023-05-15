@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { useToast } from "@chakra-ui/react";
 import Web3 from "web3";
+import { useEthers } from '@usedapp/core';
 import SmartContract from "../contracts/CBAI.json";
 import { useWallet } from "../providers/WalletProvider";
 import { Toast } from "../modules/components/Toast";
 
 // const contractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-const contractAddress = process.env.CONTRACTADDRESS;
+const contractAddress = process.env.CONTRACT_ADDRESS;
 
 interface MintProps {
   address: string;
@@ -17,33 +18,49 @@ interface MintProps {
 
 export const useSmartContract = () => {
   const toast = useToast();
-  const { active, wallet } = useWallet();
+  const { library, active, activateBrowserWallet } = useEthers();
+  const { conn, wallet } = useWallet();
   const [contract, setContract] = useState<any>(null);
   const [currentSupplyValue, setCurrentSupplyValue] = useState(null);
   const [totalSupplyValue, setTotalSupplyValue] = useState(null);
   const [nftCost, setNftCost] = useState(0);
   const [isLoadingTransaction, setIsLoadingTransaction] = useState(false);
 
-  // @ts-ignore
-  const web3 = new Web3(window.ethereum);
   const baseLink =
     process.env.NEXT_PUBLIC_CHAIN_ID === "5"
       ? "https://goerli.etherscan.io"
       : "https://etherscan.io";
 
+  let web3: Web3 | undefined;
 
+  let state: NodeJS.Timeout;
 
-  useEffect(() => {
-    initializeEngine().then((r) => r);
-  }, [contract]);
+  async function getContract() {
+
+    // @ts-ignore
+    const networkId = await window.ethereum.request({
+      method: "net_version",
+    });
+
+    // @ts-ignore
+    const NetworkData: any = await SmartContract.networks[networkId];
+
+    if (NetworkData) {
+      const smartContractObj = new web3!.eth.Contract(
+        // @ts-ignore
+        SmartContract.abi,
+        contractAddress
+      );
+
+      setContract(smartContractObj);
+    }
+  }
 
   async function initializeEngine() {
-    if (!contract) {
-      await getContract();
-      console.log({ web3 });
-    }
+    await getContract();
+    console.log({ web3 });
 
-    if (contract && active && !currentSupplyValue && !totalSupplyValue) {
+    if (contract && conn && !currentSupplyValue && !totalSupplyValue) {
       const contractCurrentSupply = await contract.methods
         .getCurrentSupply()
         .call({
@@ -62,26 +79,24 @@ export const useSmartContract = () => {
     }
   }
 
-  async function getContract() {
-
-    // @ts-ignore
-    const networkId = await window.ethereum.request({
-      method: "net_version",
-    });
-
-    // @ts-ignore
-    const NetworkData: any = await SmartContract.networks[networkId];
-
-    if (NetworkData) {
-      const smartContractObj = new web3.eth.Contract(
-        // @ts-ignore
-        SmartContract.abi,
-        contractAddress
-      );
-
-      setContract(smartContractObj);
+  function initState() {
+    try {
+      if (active && library) {
+        web3 = new Web3(library.toString());
+        initializeEngine().then((r) => r);
+        clearInterval(state);
+      } else {
+        console.log('MetaMask is not installed');
+        active && activateBrowserWallet();
+      }
+    } catch (error: any) {
+      console.error(error);
     }
   }
+
+  useEffect(() => {
+    state = setInterval(() => { initState(); }, 1000);
+  }, [contract]);
 
   async function requestMint({
     address,
@@ -607,8 +622,6 @@ export const useSmartContract = () => {
       };
     }
   }
-
-
 
   async function activateWhitelist(address: string, state: boolean) {
     setIsLoadingTransaction(true);

@@ -19,11 +19,11 @@ module.exports = {
  networks: {
    hardhat: {},
    ethereum: {
-     url: "https://api.bitstack.com/v1/wNFxbiJyQsSeLrX8RRCHi7NpRxrlErZk/DjShIqLishPCTB9HiMkPHXjUM9CNM9Na/ETH/mainnet",
+     url: process.env.MAINNET_RPC,
      accounts: [process.env.MNEMONIC],
    },
    sepolia: {
-     url: "https://ethereum-sepolia.blockpi.network/v1/rpc/public",
+     url: process.env.SEPOLIA_RPC,
      accounts: [process.env.MNEMONIC],
    },
  },
